@@ -32,7 +32,6 @@ error_reporting(E_ERROR);
         <![endif]-->
 
         <!-- Favicon and touch icons -->
-        <link rel="shortcut icon" href="assets/ico/favicon.ico">
         <link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/ico/apple-touch-icon-144-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
@@ -208,7 +207,7 @@ error_reporting(E_ERROR);
 
 		<div class="col-xs-12 col-md-6">
 			    <img src="http://www.publicdomainpictures.net/pictures/170000/velka/holding-hands-1463700055riT.jpg" height="300px" width="550px"/>
-			 <div class="row" style="border-top:1px solid #CCC;margin-top:10px" style="text-align:left;clear:both">
+			 <div class="row" style="border-top:1px solid #CCC;margin-top:10px;padding:15px" style="text-align:left;clear:both">
 			 	<h1>Contact Us</h1>
                 <br />
 			 	<p>
