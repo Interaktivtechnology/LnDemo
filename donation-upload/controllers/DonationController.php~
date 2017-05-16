@@ -1,0 +1,825 @@
+<?php
+
+namespace app\controllers;
+require_once('../models/sf/SforceEnterpriseClient.php');
+use Yii;
+use yii\filters\AccessControl;
+use yii\web\Controller;
+use yii\filters\VerbFilter;
+use yii\data\Pagination;
+use app\models\DonationTemp;
+use app\models\Account;
+use app\models\McpVerification;
+
+use yii\helpers\Html;
+
+
+class DonationController extends Controller
+{
+  public function behaviors() {
+      return [
+          'access' => [
+              'class' => AccessControl::className(),
+              'rules' => [
+                  [
+                      'actions' => ['login', 'error'],
+                      'allow' => true,
+                  ],
+                  [
+                      'allow' => true,
+                      'roles' => ['@'],
+                  ],
+              ],
+          ],
+      ];
+  }
+
+  private $sfRecordTypes = [
+      'Individual Donors' => '012280000001qmdAAA',
+      'Org Donors' => '012280000001qmeAAA'
+  ];
+
+  public function actionIndex()
+  {
+      $request = Yii::$app->request;
+      $channel = $request->get('channel');
+      $donation =  new DonationTemp;
+      $dataProvider = $donation->search($request->get('DonationTemp'));
+      return $this->render('channels/list', ['dataProvider' => $dataProvider, 'donation' => $donation]);
+  }
+
+  public function actionEdit()
+  {
+      $request = Yii::$app->request;
+      if(!$request->get('id')) $this->goBack();
+
+
+      $donation = DonationTemp::find()->where(['id' => $request->get('id')])->one();
+      if($request->post()){
+          $donation->attributes = $request->post('DonationTemp');
+          if($donation->save())
+              $this->redirect(['/donation/view', 'id' => $request->get('id')]);
+      }
+      return $this->render('form-donation', [
+                          'model' => $donation
+                      ]);
+
+  }
+
+  public function actionView()
+  {
+      $request = Yii::$app->request;
+      if(!$request->get('id')) $this->goBack();
+
+      $donation = DonationTemp::find()->select('donation_temp3.*')
+                  ->leftJoin('Account', 'Account.id = donation_temp3.Account_id')
+                  ->where(['donation_temp3.id' => $request->get('id')])
+                  ->with('account')
+                  ->one();
+      if($request->post()){
+          $donation->attributes = $request->post('DonationTemp');
+          if($donation->save())
+              $this->redirect('@web/donation/index');
+      }
+      return $this->render('view', [
+          'model' => $donation
+      ]);
+
+  }
+
+  public function actionDelete()
+  {
+      $request = Yii::$app->request;
+      if(!$request->get('id')) $this->goBack();
+      $donation = DonationTemp::find()->where(['id' => $request->get('id')])->one();
+      if($donation->delete()){
+          Yii::$app->getSession()->setFlash('notification', 'record #'.$request->get('id').' deleted');
+      }
+      $this->redirect('@web/donation/index');
+  }
+
+  public function actionSave()
+  {
+      ob_start();
+      if(isset($_POST['id']) && isset($_POST['payment_type']) && isset($_POST['date_received']) && isset($_POST['amount'])){
+      $id = mysql_real_escape_string($_POST['id']);
+      $payment_type = mysql_real_escape_string($_POST['payment_type']);
+      $date_received = mysql_real_escape_string(date("Y-m-d", strtotime($_POST['date_received'])));
+      $remarks = mysql_real_escape_string($_POST['remarks']);
+      $reference = mysql_real_escape_string($_POST['reference']);
+      $salutation = mysql_real_escape_string($_POST['salutation']);
+      $name = mysql_real_escape_string($_POST['name']);
+      $id_type = mysql_real_escape_string($_POST['id_type']);
+      $id_no = mysql_real_escape_string($_POST['id_no']);
+      $email = mysql_real_escape_string($_POST['email']);
+      $address = mysql_real_escape_string($_POST['address']);
+      $postcode = mysql_real_escape_string($_POST['postcode']);
+      $phone = mysql_real_escape_string($_POST['phone']);
+      $channel = mysql_real_escape_string($_POST['channel']);
+      $event_name = mysql_real_escape_string($_POST['event_name']);
+      $charity_name = mysql_real_escape_string($_POST['charity_name']);
+      $tax_deductable = mysql_real_escape_string($_POST['tax_deductable']);
+      $amount = mysql_real_escape_string($_POST['amount']);
+      $trx_id = mysql_real_escape_string($_POST['trx_id']);
+      $connection = Yii::$app->getDb();
+      $command = $connection->createCommand("update donation_temp3 set payment_type = '$payment_type', date_received = '$date_received',
+                  remarks = '$remarks', reference = '$reference', salutation = '$salutation',
+                  name = '$name', id_type = '$id_type', id_no = '$id_no',
+                  email = '$email', address = '$address', postcode = '$postcode',
+                  phone = '$phone', channel = '$channel', event_name = '$event_name',
+                  amount = '$amount', tax_deductable = '$tax_deductable',
+                  charity_name = '$charity_name',trx_id = '$trx_id' where id = '$id' LIMIT 1");
+      $command->execute();
+
+      }
+      else{
+          $_SESSION['notif'] = 'false';
+      }
+      if(isset($_POST['location'])){
+          $location = $_POST['location'];
+      }
+      else{
+          $location = 'data.php';
+      }
+      header('Location:'.$location.'');
+      exit;
+      return true;
+  }
+
+  private function readCSVExcel($file, $type = 'csv'){
+    $path = Yii::getAlias("@vendor/phpoffice/phpexcel/Classes/PHPExcel/IOFactory.php");
+    require_once($path);
+    if($type == 'csv'):
+        $delimiter = \app\components\Helper::getFileDelimiter($file, 10);
+        $objReader = \PHPExcel_IOFactory::createReader('CSV')->setDelimiter($delimiter)
+                                                    ->setEnclosure('"')
+                                                    ->setSheetIndex(0);;
+        $objPHPExcel = $objReader->load($file);
+
+        $array = $objPHPExcel->getSheet(0)->toArray(null,true,true,true);
+    elseif($type == 'xls' || $type="xlsx"):
+        $objPHPExcel = \PHPExcel_IOFactory::load($file);
+        $array = $objPHPExcel->getSheet(0)->toArray(null,true,true,true);
+
+    endif;
+    return $array;
+  }
+
+  private function processSGGives($csv, $fileName){
+      $i = 0;
+      $trx = Yii::$app->db->beginTransaction();
+      $errorCount = 0;
+      foreach($csv as $row):
+          $payment_type = 'Not Defined';
+          if($i >= 7 and $row['A'] != ''):
+              switch($row['A']){
+                  case (preg_match("[credit]", strtolower($row['A'])) ? true : false) :
+                  $payment_type = 'Credit Card';
+                  break;
+
+                  case (preg_match("[cash]", strtolower($row['A'])) ? true : false) :
+                  $payment_type = 'Cash';
+                  break;
+
+                  case (preg_match("[enets]", strtolower($row['A'])) ? true : false) :
+                  $payment_type = 'eNETS';
+                  break;
+              }
+              $donation = new DonationTemp;
+              $donation->payment_type = $payment_type;
+              $donation->channel = "Sg Gives";
+              $donation->date_received =date('Y-m-d H:i:s',strtotime($row['B']));
+              $donation->reference = (string)$row['C'];
+              preg_match('/(?:\d*\.)?\d+/', $row['I'], $amount);
+
+              $donation->amount = $row['G'];
+              $donation->gross = $row['G'];
+              $donation->fees = 0;
+              $donation->phone = '';
+              $donation->id_no = trim(strtoupper($row['L']));
+              $donation->date_cleared = date("Y-m-d", strtotime($row['F']));
+              $donation->remarks = "TDR By POST: ".$row['I'];
+              preg_match('/([0-9]{6})/',$row['N'], $matches);
+              if(count($matches) > 0)
+                  $donation->postcode = $matches[0];
+              $donation->address = str_replace($donation->postcode, '', $row['N']);
+              $donation->email = $row['M'];
+              $donation->name = ucwords(strtolower(str_replace('_',' ',$row['K'])));
+              $donation->event_name = (string)$row['E'];
+              $donation->salutation = $row['J'];
+              $donation->data_source = basename($fileName);
+              $donation->id_type = \app\components\Helper::GetSGIdType($donation->id_no);
+              $donation->tax_deductable = (string)(strtoupper($row['H']) == "YES" ? 1 : 0);
+              $account = DonationTemp::createAccount($donation);
+
+              if(!$account->save()):
+                  $log[$i] = Html::errorSummary($account);
+                  $log[$i]['_object'] = 'Account';
+                  $log[$i]['_row'] = $i;
+                  $trx->rollback();
+                  $errorCount ++;
+                  continue;
+
+              else:
+                  $donation->Account_id = $account->id;
+              endif;
+
+              if(!$donation->save()):
+                  $error['message'] = Html::errorSummary($donation);
+                  $error['_row'] = $i;
+                  $error['_object'] = $donation->attributes;
+                  $log[$i] = $error;
+                  $errorCount++;
+              else:
+                  $log[] = "Row $i Success";
+              endif;
+          endif;
+          $i++;
+      endforeach;
+      if($errorCount == 0) $trx->commit();
+      else $trx->rollback();
+      Yii::$app->getSession()->setFlash('log', $log);
+      Yii::$app->getSession()->setFlash('errorCount', $errorCount);
+      Yii::$app->getSession()->setFlash('successCount', $i - $errorCount - 7);
+      $this->redirect('@web/donation/import');
+  }
+
+
+  function processGivingSg($csv, $fileName){
+
+      $i=0;
+      $log = [];
+      $trx = Yii::$app->db->beginTransaction();
+      $errorCount = 0;
+      $log[0] = null;
+
+
+      foreach($csv as $row):
+
+          if($i>7 and $row['A'] != ''):
+              $donation = new DonationTemp;
+              $donation->payment_type = "Credit Card";
+              $donation->channel = "Giving Sg";
+              $dateDonation = \DateTime::createFromFormat('d/m/Y', $row['A']);
+              $dateDonation = !$dateDonation ? \DateTime::createFromFormat('d-m-y', $row['A']) : $dateDonation;
+              if($dateDonation)
+                $donation->date_received = $dateDonation->format("Y-m-d");
+              $donation->reference = (string)$row['B'];
+              $donation->amount = $row['F'];
+              //$donation->phone = (string)$row['G'];
+              $donation->id_no = trim(strtoupper($row['J']));
+              $donation->postcode = '';//(string)$row['F'];
+
+              //$donation->address = preg_replace('/(singapore)/i', '', $row['E']);
+
+
+              $donation->name = ucwords(strtolower(str_replace('_',' ',$row['I'])));
+              $donation->event_name = $row['C'];
+              $donation->data_source = basename($fileName);
+              $donation->id_type = \app\components\Helper::GetSGIdType($donation->id_no);
+              $donation->Status__c = "Cleared";
+              $dateCleared = \DateTime::createFromFormat('d/m/Y', $row['E']);
+              $dateCleared = !$dateCleared ? \DateTime::createFromFormat('d-m-y', $row['E']) : $dateCleared;
+              if($dateCleared)
+                $donation->date_cleared =  $dateCleared->format("Y-m-d");
+              $donation->email = str_replace('-', '', $row['K']);
+              $donation->email = trim($donation->email);
+              $account = DonationTemp::createAccount($donation);
+              if(!$account->save()):
+                  $log[$i] = Html::errorSummary($account);
+                  //$log[$i]['_object'] = 'Account';
+                  $log[$i]['_row'] = $i ;
+                  $trx->rollback();
+                  unlink($fileName);
+                  $errorCount ++;
+              else:
+                  $donation->Account_id = $account->id;
+              endif;
+
+              if(!$donation->save()):
+                  $error['message'] = Html::errorSummary($donation);
+                  $error['_row'] = $i - 7;
+                  //$error['_object'] = $donation->attributes;
+                  $log[$i] = $error;
+                  $errorCount++;
+              else:
+                $log[] = "Row ".($i-7)." Success";
+              endif;
+
+          endif;
+
+          $i++;
+      endforeach;
+      if($errorCount == 0) $trx->commit();
+      else {
+        $trx->rollback();
+        unlink($fileName);
+      }
+
+
+      Yii::$app->getSession()->setFlash('log', $log);
+      Yii::$app->getSession()->setFlash('errorCount', $errorCount);
+      Yii::$app->getSession()->setFlash('successCount', $i - 8 - $errorCount);
+      $this->redirect('@web/donation/import');
+  }
+
+  function processSimplyGiving($csv, $fileName){
+
+      $i=0;
+      $log = [];
+      $trx = Yii::$app->db->beginTransaction();
+      $errorCount = 0;
+      $log[0] = null;
+      $successCount = 0;
+
+      foreach($csv as $row):
+
+          if($i>=3 and $row['A'] != ''):
+              $donation = new DonationTemp;
+              $donation->payment_type = "Credit Card";
+              $donation->channel = "Simply Giving";
+              //$dateDonation = \DateTime::createFromFormat('d/m/y H:i', $row['A']);
+
+              $donation->date_received = date("Y-m-d", strtotime($row['P']));
+              $donation->reference = '';
+              $donation->amount = $row['M'];
+              $donation->fees = $row['N'];
+              $donation->phone = (string)$row['S'];
+              $donation->id_no = trim(strtoupper($row['S']));
+              $donation->postcode = (string)$row['Y'];
+
+              $donation->address = preg_replace('/(singapore)/i', '', $row['U']);
+              $donation->phone = $row['T'];
+              $donation->email = $row['B'];
+              $donation->name = ucwords(strtolower(str_replace('_',' ',$row['A'])));
+              $donation->event_name = $row['E'];
+              $donation->data_source = basename($fileName);
+              $donation->id_type = \app\components\Helper::GetSGIdType($donation->id_no);
+              $donation->Status__c = "Cleared";
+              $donation->date_cleared = date("Y-m-d H:i:s");
+              $donation->tax_deductable = (String)($donation->id_type != 'OTHERS' && $donation->amount >= 50);
+              $account = DonationTemp::createAccount($donation);
+
+              if(!$account->save()):
+                  $log[$i] = [];
+                  $log[$i]['message'] = Html::errorSummary($account);
+
+                  $log[$i]['_object'] = 'Account';
+                  $log[$i]['_row'] = $i;
+                  $trx->rollback();
+                  $errorCount ++;
+              else:
+                  $donation->Account_id = $account->id;
+              endif;
+
+              if(!$donation->save()):
+                  $error['message'] = Html::errorSummary($donation);
+                  $error['_row'] = $i - 2;
+                  //$error['_object'] = $donation->attributes;
+                  $log[$i] = $error;
+                  $errorCount++;
+              else:
+                  $log[] = "Row $i Success";
+                  $successCount ++;
+              endif;
+
+          endif;
+
+          $i++;
+      endforeach;
+      if($errorCount == 0) $trx->commit();
+      else $trx->rollback();
+
+
+      Yii::$app->getSession()->setFlash('log', $log);
+      Yii::$app->getSession()->setFlash('errorCount', $errorCount);
+      Yii::$app->getSession()->setFlash('successCount', $successCount);
+      $this->redirect('@web/donation/import');
+  }
+
+  function processGiveAsia($csv, $fileName)
+  {
+      $i = 0;
+      $trx = Yii::$app->db->beginTransaction();
+      $errorCount = 0;
+      $log = [];
+      $successCount = 0;
+      foreach($csv as $row):
+          if($i >= 5 ):
+              $donation = new DonationTemp;
+              $donation->payment_type = "Credit Card";
+              $donation->channel = "Give Asia";
+              $dateDonation = \DateTime::createFromFormat('d M Y h:i:s O', strtotime($row['C']));
+              $donation->date_received =date('Y-m-d H:i:s',strtotime($row['C']));
+
+              preg_match('/(?:\d*\.)?\d+/', $row['I'], $amount);
+              preg_match('/(?:\d*\.)?\d+/', $row["H"], $gross);
+              //preg_match('/(?:\d*\.)?\d+/', $row["J"], $fees);
+
+              $donation->amount = $gross[0];
+              $donation->gross = $amount[0];
+              //$donation->fees = $fees[0];
+              $donation->phone = null;
+              $donation->id_no = trim(strtoupper($row['M']));
+
+
+              $donation->Status__c = $row['J'] == "SUCCESS" ? "Cleared" : "Received";
+              if($donation->Status__c == "Cleared")
+                $donation->date_cleared = Date("Y-m-d H:i:s");
+
+              preg_match('/([0-9]{6})/',$row['N'], $matches);
+              if(count($matches) > 0)
+                  $donation->postcode = $matches[0];
+              $donation->address = preg_replace('/('.trim($donation->postcode).')/i', '', trim($row['N']));
+
+              $donation->address = preg_replace('/(singapore)/i', '', $donation->address);
+              $donation->email = $row['E'];
+              $donation->name = ucwords(strtolower(str_replace('_',' ',$row['D'])));
+              $donation->event_name = $row['G'];
+              $donation->data_source = basename($fileName);
+              $donation->id_type = \app\components\Helper::GetSGIdType($donation->id_no);
+              $donation->reference = (string)$row['K'];
+
+              $account = DonationTemp::createAccount($donation);
+	      print_r($account);
+              if(!$account->save()):
+                  $log[$i] = Html::errorSummary($account);
+//                  $log[$i]['_object'] = 'Account';
+//                  $log[$i]['_row'] = $i;
+                  $trx->rollback();
+                  $errorCount ++;
+                  continue;
+
+              else:
+                  $donation->Account_id = $account->id;
+              endif;
+
+              if(!$donation->save()):
+                  $error['message'] = Html::errorSummary($donation);
+                  $error['_row'] = $i - 4;
+                  $error['_object'] = $donation->attributes;
+
+                  $log[$i] = $error;
+                  $errorCount++;
+              else:
+                  $log[] = "Row $i Success";
+                  $successCount ++ ;
+              endif;
+          endif;
+          $i++;
+      endforeach;
+
+      if($errorCount == 0) $trx->commit();
+      else $trx->rollback();
+
+      if(count($log) == 0) {
+          $log[] = ['message' => "No records inserted, please check again your uploaded file.", '_row' => 0];
+          $errorCount ++ ;
+      }
+      Yii::$app->getSession()->setFlash('log', $log);
+      Yii::$app->getSession()->setFlash('errorCount', $errorCount);
+      Yii::$app->getSession()->setFlash('successCount', $successCount);
+      $this->redirect('@web/donation/import');
+  }
+
+
+  public function processMcp($csv, $fileName)
+  {
+      $i = 0;
+      $trx = Yii::$app->db->beginTransaction();
+      $errorCount = 0;
+      $log = [];
+      $successCount = 0;
+      foreach($csv as $row):
+          if($i >= 1 and $row['A'] != ''):
+              $mcpVerification = new McpVerification;
+              $mcpVerification->reference = $row['C'];
+              $mcpVerification->trx_date = date("Y-m-d H:i:s", strtotime($row['A']));
+              $mcpVerification->auth_code = $row['L'];
+              preg_match('/(?:\d*\.)?\d+/', $row['F'], $amount);
+              $mcpVerification->amount = $amount[0];
+              $mcpVerification->response_message = $row['K'];
+              $mcpVerification->card_no = $row['O'];
+              $mcpVerification->payer_name = $row['M'];
+              $mcpVerification->created_date = date("Y-m-d H:i:s");
+              $mcpVerification->last_modified_date = date("Y-m-d H:i:s");
+              $mcpVerification->file_name = basename($fileName);
+              if(!$mcpVerification->save()):
+                  $error['message'] = Html::errorSummary($mcpVerification);
+                  $error['_row'] = $i;
+                  $log[$i] = $error;
+                  $errorCount++;
+              else:
+                  $eachLog['message'] = "Row ".$i." inserted successfully.";
+                  $eachLog['_row'] = $i;
+                  $log[$i] = $eachLog;
+                  $successCount++;
+              endif;
+
+          endif;
+          $i++;
+      endforeach;
+      if($errorCount == 0) $trx->commit();
+      else $trx->rollback();
+
+      Yii::$app->getSession()->setFlash('log', $log);
+      Yii::$app->getSession()->setFlash('errorCount', $errorCount);
+      Yii::$app->getSession()->setFlash('successCount', $successCount);
+      $this->redirect('@web/donation/import');
+
+  }
+
+  public function actionUpload()
+  {
+      ini_set("auto_detect_line_endings", "1");
+      $request = Yii::$app->request;
+      $channel = $request->post('channel');
+      //$connection->createCommand('SELECT * FROM user')
+      $path = pathinfo($_FILES["file"]["name"]);
+      $fileName = getcwd().'/../temp/'.uniqid().$channel.'_donation.'.$path['extension'];
+      move_uploaded_file($_FILES["file"]["tmp_name"],$fileName);
+
+      $i = 0;
+      $csv = $this->readCSVExcel($fileName, strtolower($path['extension']));
+      Yii::$app->getSession()->setFlash('channel', strtoupper($channel));
+      switch($channel){
+          case 'sggives':
+          $this->processSGGives($csv, $fileName);
+          break;
+
+          case 'giveasia':
+          $this->processGiveAsia($csv, $fileName);
+          break;
+
+          case 'btwebsite':
+          $this->processBTWebsite($csv, $fileName);
+          break;
+
+          case 'mcp':
+            $this->processMcp($csv, $fileName);
+            break;
+
+          case 'givingsg':
+            $this->processGivingSg($csv, $fileName);
+            break;
+
+          case 'simplygiving':
+            $this->processSimplyGiving($csv, $fileName);
+            break;
+          default:
+          $this->giveAsia($csv, $fileName);
+          break;
+      }
+  }
+
+
+
+  public function actionImport()
+  {
+      return $this->render('import');
+  }
+
+  public function getRecordTypeId($salesforceConnection)
+  {
+      $soql = "SELECT Id, Name FROM RecordType Where name in ('Org Donors', 'Individual Donors')";
+      $records = $salesforceConnection->query($soql);
+      return $records->records;
+  }
+
+  public function actionUploadToSf() {
+
+      $request = Yii::$app->request;
+
+
+      $model = DonationTemp::find();
+      $donations = $model->where('sf_upload <> 1')->
+        andWhere('id in ('.$request->get('id').')')->all();
+      $success = 0;
+      //init SF connection
+      $mySforceConnection = new \SforceEnterpriseClient();
+
+      $connection = $mySforceConnection->createConnection(Yii::$app->params['sfentwsdl']);
+      $mySforceConnection->login(Yii::$app->params['sfuser'], Yii::$app->params['sfpassword'] . Yii::$app->params['sftoken']);
+      $rowCount = 0; $i = 0;
+      foreach ($donations as $row) :
+          $rowCount ++ ;
+
+          $record = new \stdClass;
+          $record->Amount__c = $row->amount;
+          $record->Bank__c = $row->Bank__c;
+          $record->Card_Type__c = null;
+          /*
+          if($row->date_cleared)
+            $record->Cleared_Date__c = $row->date_cleared;
+          */
+          $record->Cleared_Date__c = $row->date_received;
+          if($row->Status__c)
+            $record->Donation_Status__c = $row->Status__c;
+          $record->Contact_Name__c = null;
+          $eventName = $this->getEvent($mySforceConnection, $row->event_name);
+          if($eventName !== null)
+            $record->Programme_Event__c = $eventName;
+          $record->Donation_Date__c = $row->date_received;
+          $record->Donation_Purpose__c = "General Purpose";
+          //$record->Donation_Status__c = "Received";
+          $record->Fees__c = $row->fees == null ? 0 : $row->fees;
+          $record->Gross_Amount__c = $row->gross == null ? 0 : $row->gross;
+          $record->Expiry_Date__c = null;
+          $record->Frequency_Type__c = null;
+          $record->Payment_Method__c = $row->payment_type;
+          $record->Remarks__c = $row->remarks;
+          $record->Transaction_No__c = $row->reference;
+          if(isset(Yii::$app->params['Campaign'][$row->channel])):
+            $record->CampaignName__c = Yii::$app->params['Campaign'][$row->channel];
+          endif;
+          $record->Channel_Of_Donation__c = $row->channel;
+          $record->Id_Type__c = $row->id_type;
+          try{
+              if($row->id_no or $row->name):
+                  if($row->id_type != 'UEN'):
+                      $soql = "SELECT Id, Id_No__c, AccountId FROM Contact WHERE ";
+                      $soql .=  $row->id_no ? " ID_No__c = '$row->id_no'" : '';
+
+                      if($row->id_no)
+                        $soql .= $row->email ? " OR (Email = '$row->email' OR Account.Email__c = '$row->email')" : '';
+                      else
+                        $soql .= $row->email ? " (Email = '$row->email' OR Account.Email__c = '$row->email')" : '';
+                      $soql .= '  LIMIT 1';
+                      if(strtolower($row->name) == 'anonymous'):
+                        $soql = "SELECT AccountId, Id FROM Contact WHERE  lastname = 'Anonymous (Online)' or firstname = 'Anonymous (Online)' LIMIT 1";
+                      endif;
+                  else:
+                      $soql = "Select Id FROM Account Where Id_No__c = '".$row->id_no."'";
+                  endif;
+              else:
+                  $soql = "SELECT AccountId, Id FROM Contact WHERE  lastname = 'Anonymous (Online)' or firstname = 'Anonymous (Online)' LIMIT 1";
+              endif;
+
+              $sfAccount = $mySforceConnection->query($soql);
+
+              $accountId = null;
+              if(count($sfAccount->records) == 0):
+                  $responseAccount = $mySforceConnection->create([$this->CreateSfAccount($row->account, $row)], 'Account');
+                  if($responseAccount[0]->success == false):
+
+                      $eachLog['account'] = $responseAccount[0]->errors[0]->message;
+                      $eachLog['row'] = $rowCount;
+
+                  else:
+                      $accountId = $responseAccount[0]->id;
+                  endif;
+              else:
+                  $accountId = isset($sfAccount->records[0]->AccountId) ? $sfAccount->records[0]->AccountId : $sfAccount->records[0]->Id;
+              endif;
+
+              $record->Donor_Name__c = $accountId;
+              //print_r($accountId);exit();
+
+
+
+              if($row->id_type != 'UEN'):
+                  $contact = $this->CreateSfContact($row->account, $row);
+                  $contact->AccountId = $accountId;
+
+                  if(count($sfAccount->records) > 0):
+                      $record->Contact_Name__c = $sfAccount->records[0]->Id;
+                  else:
+                      $responseContact = $mySforceConnection->create([$contact], 'Contact');
+
+                      if($responseContact[0]->success == true):
+                          $record->Contact_Name__c = $responseContact[0]->id;
+                      else:
+                          $eachLog['contact'] = $responseContact[0]->errors[0]->message;
+                          $eachLog['row'] = $rowCount;
+                      endif;
+                  endif;
+              endif;
+              $i++;
+              $record->Tax_Deductible__c = ($row->valid_nric && $row->amount >= 50)? true : false;
+              $response = $mySforceConnection->create([$record], 'Donation__c');
+
+
+              if($response[0]->success == false):
+                  $eachLog['donations'] = $response[0]->errors[0]->message;
+                  $eachLog['row'] = $rowCount;
+              else:
+                  $update = DonationTemp::findOne($row['id']);
+                  $update->salesforce_id = $response[0]->id;
+                  $update->sf_upload = 1;
+
+                  $update->save();
+                  $eachLog['donation'] = "Row ".$rowCount." was uploaded to Salesforce.";
+                  $eachLog['salesforce_id'] = $response[0]->id;
+                  $success++;
+              endif;
+              $log[] = $eachLog;
+          }
+          catch(Exception $e){
+              print_r($e->getMessage());
+          }
+
+      endforeach;
+
+      Yii::$app->getSession()->setFlash('log', json_encode($log, JSON_PRETTY_PRINT));
+      Yii::$app->getSession()->setFlash('success', $success." record(s) was uploaded to Salesforce.");
+      Yii::$app->getSession()->setFlash('json', true);
+      $this->redirect("@web/donation/index");
+  }
+
+  public function CreateSfAccount($account, $donation){
+      $record = new \stdClass;
+      $record->Name = $donation->name;
+      $record->Description = "FROM :".$account->AccountSource ;
+      //$record->Rating = $account->Rating;
+      $record->BillingStreet = preg_replace('/(singapore)/i', '', $donation->address);
+      $record->BillingPostalCode = $donation->postcode;
+      $record->BillingState = 'Singapore';
+      $record->BillingCountry = "Singapore";
+      $record->Website = $account->Site;
+      $record->Email__c = $donation->email;
+      $record->Id_Type__c = $donation->id_type;
+      $record->Id_No__c = $donation->id_no;
+      $record->Type_Of_Donor__c = "New Donor";
+      $record->Phone = $account->Phone;
+      $record->recordTypeId = strtoupper($donation->id_type) != 'UEN' ? Yii::$app->params['RecordTypeIdAccount']['Org Donors'] : Yii::$app->params['RecordTypeIdAccount']['Individual Donors'];
+      return $record;
+
+  }
+
+
+  public function CreateSfContact($account, $donation)
+  {
+      $record = new \stdClass;
+      $record->ID_No__c = $donation->id_no;
+      $record->ID_Type__c = $donation->id_type;
+      $name = explode(' ', $donation->name);
+
+      $record->LastName = $donation->name;
+      //$record->LastName = count($name) > 1 ? $name[1] : $donation->name;
+      $record->Email = $donation->email;
+      $record->Phone = !preg_match('/[9|8][0-9]{5,10}/', $donation->phone) ? $donation->phone : null;
+      $record->MobilePhone = preg_match('/[9|8][0-9]{5,10}/', $donation->phone) ? $donation->phone : null;
+      $record->MailingStreet = $donation->address;
+      $record->MailingPostalCode = $donation->postcode;
+      $record->MailingState = 'Singapore';
+      $record->MailingCity = 'Singapore';
+      $record->MailingCountry = "Singapore";
+      $record->Salutation = $donation->salutation;
+      $record->recordTypeId = Yii::$app->params['RecordTypeIdContact'];
+      return $record;
+  }
+
+
+
+
+  public function actionDownload(){
+      $fileName = Yii::$app->request->get('file');
+      set_time_limit(0); // disable the time limit for this script
+
+      $path = getcwd().'/../temp/'; // change the path to fit your websites document structure
+      $dl_file = preg_replace("([^\w\s\d\-_~,;:\[\]\(\].]|[\.]{2,})", '', $fileName); // simple file name validation
+      $dl_file = filter_var($dl_file, FILTER_SANITIZE_URL); // Remove (more) invalid characters
+      $fullPath = $path.$dl_file;
+
+      if ($fd = fopen ($fullPath, "r")) {
+          $fsize = filesize($fullPath);
+          $path_parts = pathinfo($fullPath);
+          $ext = strtolower($path_parts["extension"]);
+          switch ($ext) {
+              case "pdf":
+              header("Content-type: application/pdf");
+              header("Content-Disposition: attachment; filename=\"".$path_parts["basename"]."\""); // use 'attachment' to force a file download
+              break;
+              // add more headers for other content types here
+              default;
+              header("Content-type: application/octet-stream");
+              header("Content-Disposition: filename=\"".$path_parts["basename"]."\"");
+              break;
+          }
+          header("Content-length: $fsize");
+          header("Cache-control: private"); //use this to open files directly
+          while(!feof($fd)) {
+              $buffer = fread($fd, 2048);
+              echo $buffer;
+          }
+      }
+      fclose ($fd);
+      exit;
+  }
+
+  public function getEvent($sfConn, $eventName)
+  {
+    $eventName = strtolower($eventName);
+    $res = $sfConn->query("Select Id from Programme_Event__c where Name like '%$eventName%'");
+    return count($res->records) > 0 ? $res->records[0]->Id : null;
+  }
+
+
+  public function actionTest()
+  {
+      $dateDonation = \DateTime::createFromFormat('d/m/Y','27-02-17');
+      print_r($dateDonation);
+  }
+
+}
+?>

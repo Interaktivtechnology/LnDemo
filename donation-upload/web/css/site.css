@@ -1,0 +1,22 @@
+.row {
+    margin-right: -15px;
+    margin-left: -15px;
+}
+.navbar-collapse{
+    padding:20px 0;
+    background-color: #f8f8f8;
+}
+
+.container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    width:100%;
+}
+
+
+div.required label.control-label:after {
+    content: " *";
+    color: red;
+}
