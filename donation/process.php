@@ -248,8 +248,10 @@ if (isset($_POST)) {
             die($e->faultstring);
         }
         if($createDonation[0]->success) {
+            
             $response_state = "success";
-            $response_message = "Please wait while redirecting to payment gateway";
+            $response_message = "Success, our team will contact you soon.";
+                /*
             //MCP payment - create form post data to MCP
             $fgkey = generateFgkey(MCP_KEY, MCP_MID, $createDonation[0]->id, MCP_CURRENCY, $form['amount']);
             $dform = '<form action="'.MCP_URL.'" method="post" name="donation" id="donation">';
@@ -269,6 +271,7 @@ if (isset($_POST)) {
             $dform .= '<input type="hidden" name="fgkey" value="'.$fgkey.'">';
             $dform .= '</form>';
             $js = '<script type="text/javascript">document.donation.submit();</script>';
+            */
         } else {
             $response_state = "danger";
             $response_message = "Unable to create donation record.";
@@ -302,7 +305,6 @@ if (isset($_POST)) {
                 <br />
                 <div class="alert alert-<?=$response_state?>">
                     <center><strong><?=$response_message?></strong></center>
-                    <?php echo $dform.$js;?>
                 </div>
                 <button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace('index.php')">Return to homepage</button>
 
