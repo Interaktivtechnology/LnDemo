@@ -1,0 +1,15 @@
+<?php
+
+return [
+    'adminEmail' => 'admin@example.com',
+    'sfuser' => 'bcf@interaktiv.sg.dev3',
+    'sfpassword' => 'interAktiv.123',
+    'sftoken' => 'BXieXbHSyrXuDs1nLtuY1s7d',
+    'sfentwsdl' => getcwd().'/../models/sf/sandbox.enterprise.wsdl.xml',
+    'instance' => 'http://cs5.salesforce.com/',
+    'RecordTypeIdContact' => '012280000001qmfAAA',
+    'RecordTypeIdAccount' => [
+        'Individual Donors' => '012280000001qmdAAA',
+        'Org Donors' => '012280000001qmeAAA'
+    ]
+];

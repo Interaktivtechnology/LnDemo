@@ -1,0 +1,16 @@
+{
+  "102":{
+    "id":"102",
+    "username":"eko@interaktiv.sg",
+    "password":"123123123",
+    "authKey":"04e0293e-07f1-45c8-bc65-b1905e6088d0",
+    "accessToken":"eec90d93-3f15-41ed-a14b-428797c1bd81"
+  },
+  "103" : {
+    "id":"103",
+    "username":"ben@interaktiv.sg",
+    "password":"ben.interaktiv.1",
+    "authKey":"34dfb5ee-38c1-4623-b0bf-1bebf74aff3d",
+    "accessToken":"9773744b-6ff4-48f5-9be0-c765051a0d58"
+  }
+}
