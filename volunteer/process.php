@@ -1,5 +1,5 @@
 <?php
-error_reporting(0);
+//error_reporting(0);
 session_start();
 include 'sf.php';
 ob_start();
@@ -11,7 +11,7 @@ if(isset($_SESSION['error_message'])){
 function checkEmail($email){
     global $mySforceConnection;
     try{
-        $query = "select id from Account where Email__c = '$email' LIMIT 1";
+        $query = "select id from Account where Email = '$email' LIMIT 1";
         $data = $mySforceConnection->query(($query));
         if(isset($data->records[0]->Id)){
             return 'duplicate';
@@ -99,7 +99,7 @@ $idno = $_POST['form-nric'];
 $email = $_POST['form-email'];
 $is_member = 0;
 $is_volunteer = 0;
-$query = "SELECT Id, Email__c, ID_NO__C , Volunteer_Status__c, Membership_Application_date__c FROM Contact WHERE ID_NO__C = '$idno' OR Email__c  = '$email' LIMIT 1";
+$query = "SELECT Id, Email, ID_NO__C , Volunteer_Status__c, Membership_Application_date__c FROM Contact WHERE ID_NO__C = '$idno' OR Email  = '$email' LIMIT 1";
 $contact = $mySforceConnection->query(($query));
 if(isset($contact->records[0]->Membership_Application_date__c)){
     $is_member = '1';
@@ -163,10 +163,6 @@ if(!isset($error_message[0])){
     $pref = $_POST['form-preferred-name'];
     $cat = $_POST['form-category'];
     
-    if(isset($_POST['diag'])){
-        $diag = 'been diagnosed with Breast Cancer';
-    }
-
     $mode = 'new';
 
     $query = "SELECT Id, ID_NO__C, Email__c FROM Account WHERE ID_NO__C = '$idno' OR Email__c  = '$email' LIMIT 1";
@@ -281,7 +277,7 @@ if(!isset($error_message[0])){
 
     $mode = 'new';
 
-    $query = "SELECT Id, Email__c, ID_NO__C FROM Contact WHERE ID_NO__C = '$idno' OR Email__c  = '$email' LIMIT 1";
+    $query = "SELECT Id, Email, ID_NO__C FROM Contact WHERE ID_NO__C = '$idno' OR Email = '$email' LIMIT 1";
     $contact = $mySforceConnection->query(($query));
     if(isset($contact->records[0]->Id)){
         $idc = $contact->records[0]->Id;
@@ -306,18 +302,11 @@ if(!isset($error_message[0])){
                 $contact[0]->ID_No__c = $idno;
                 $contact[0]->RecordTypeId = $rectypeCon;
                 $contact[0]->ID_Type__c = $idtype;
-                $contact[0]->EMAIL = $email;
-                $contact[0]->Email__c = $email;
-                if($_POST['diag'] == 'diag'){
-                    $contact[0]->I_have__c = 'been diagnosed with Breast Cancer';
-                }
-
+                //$contact[0]->EMAIL = $email;
+                $contact[0]->Email = $email;
+                
                 if(isset($pref) AND strlen($pref) > 1){
                     $contact[0]->Preferred_Name__c = ucwords(strtolower($pref));
-                }
-
-                if($_POST['form-diag-when']){
-                    $contact[0]->Completed_Treatment__c = $_POST['form-diag-when'];
                 }
 
                 if(isset($_POST['form-birth-year'])){
@@ -334,13 +323,6 @@ if(!isset($error_message[0])){
                 if($_POST['form-gender']){
                     $contact[0]->Gender__c = $_POST['form-gender'];
                 }
-                
-                if(isset($diag)){
-                    $contact[0]->I_have__c = $diag;
-                }
-                if(isset($_POST['form-diag-when'])){
-                    $contact[0]->Completed_Treatment__c = $_POST['form-diag-when'];
-                }  
 
                 if(isset($_POST['form-have-role'])){
                     $contact[0]->Previous_Volunteer_Role__c = $_POST['form-have-role'];
@@ -458,26 +440,10 @@ if(!isset($error_message[0])){
             $request .= 'Postal Code : '.$postcode."\n";
         }
 
-        if($_POST['diag'] == 'diag'){
-            $request .= 'I Have : been diagnosed with Breast Cancer'."\n";
-        }
-
-        if($_POST['form-diag-when']){
-            $request .= 'Completed Treatment : '.$_POST['form-diag-when']."\n";
-        }
-
         if($_POST['form-phone']){
             $request .= 'Phone : '.$_POST['form-phone']."\n";
         }
         
-        if(isset($diag)){
-            $request .= 'I_have__c : '.$diag."\n";
-        }
-
-        if(isset($_POST['form-diag-when'])){
-            $request .= 'Completed_Treatment__c : '.$_POST['form-diag-when']."\n";
-        }  
-
         if(isset($_POST['form-have-role'])){
             $request .= 'Previous_Volunteer_Role__c : '.$_POST['form-have-role']."\n";
         } 

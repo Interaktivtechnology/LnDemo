@@ -4,6 +4,7 @@ $donation_token = uniqid();
 /*** add the donation token to the session ***/
 $_SESSION['donation_token'] = $donation_token;
 error_reporting(E_ERROR);
+require_once("library/FunctionLib.php");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -172,6 +173,32 @@ error_reporting(E_ERROR);
 						                            <input type="text" class="form-control" maxlength="30" value="<?php if(isset($_GET['email'])) echo $_GET['email'] ?>"  id="email" name="email" required="" data-validation="email">
 						                        </div>
 						                    </div>
+                                            <div class="form-group">
+                                                <label for="id_no" class="col-sm-3 control-label">Donation Purpose</label>
+                                                <div class="col-sm-9">
+                                                    <?=SelectList($mySforceConnection, 'Donation__c', 'Donation_Purpose__c', null, array("class"=>"select", "required" => "required"))?>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="id_no" class="col-sm-3 control-label">Campaign Name</label>
+                                                <div class="col-sm-9">
+                                                    <select class=" select" id="Campaign_Name__c" name="Campaign_Name__c" required="">
+                                                    <option value="">Please select campaign</option>
+                                                    <?php
+                                                    try {
+                                                        //Campaign
+                                                        $queryCampaign = "SELECT Id, Name FROM Campaign WHERE IsActive = true";
+                                                        $campaign = $mySforceConnection->query($queryCampaign);
+                                                    } catch (Exception $e) {
+                                                        die($e->faultstring);
+                                                    }
+                                                    for($i=0; $i<count($campaign->records); $i++) {
+                                                        echo '<option value="'. $campaign->records[$i]->Id .'">'. $campaign->records[$i]->Name .'</option>';
+                                                    }
+                                                    ?>
+                                                    </select>
+                                                </div>
+                                            </div>
 						                    <div class="form-group">
 						                        <label for="amount" class="col-sm-6 control-label">I wish to donate</label>
 						                        <div class="col-sm-6">

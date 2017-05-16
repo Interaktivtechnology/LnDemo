@@ -232,6 +232,8 @@ if (isset($_POST)) {
         $donation[0]->Donation_Status__c = "Received";
         $donation[0]->Amount__c = $form['amount'];
         $donation[0]->Payment_Method__c = "Credit Card";
+        $donation[0]->Campaign_Name__c = $form['Campaign_Name__c'];
+        $donation[0]->Donation_Purpose__c = $form['Donation_Purpose__c'];
         if(isset($form['channel']) AND strlen($form['channel']) > 3){
             $donation[0]->Channel_of_Donation__c = $form['channel'];
         }

@@ -202,7 +202,7 @@ jQuery(document).ready(function() {
      yearRange: '-65:', 
      maxDate: '1999/12/31'
     });
-
+    /*
     $('#diag').change(function () {
             var name = $(this).val();
             var check = $(this).prop('checked');
@@ -216,4 +216,5 @@ jQuery(document).ready(function() {
             }
 
         });
+    */
 });

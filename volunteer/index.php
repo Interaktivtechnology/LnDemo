@@ -88,50 +88,7 @@ error_reporting(E_ERROR);
 					                        	<input type="text" name="form-email" placeholder="Email Address..." class="form-email form-control required" id="form-email" value="<?php if(isset($_GET['email'])){ echo $_GET['email']; } ?>" >
 					                        </div>
 
-					                        <div class="form-group">
-					                        	<center><img src="assets/img/member.png"  style="width:300px;height:150px;cursor:pointer"/></center>
-					                        </div>
-
-					                        <div class="form-group">
-					                        	<label class="sr-only" for="form-category">Membership Category</label>
-					                        	<?php
-																		$issueOpt = array("class"=>"custom-select form-control required select","name"=>"form-category","id"=>"form-category");
-																		echo str_replace('><', '>Membership Category<', SelectList($mySforceConnection, 'Contact', 'Membership_Category__c', 'How',$issueOpt));
-																		?>
-					                        </div>
-
-					                        <div class="form-group">
-					                        	<label class="sr-only" for="form-know">I got to know about Interaktiv Foundation's' membership via:</label>
-					                        	
-																	<?php
-																		$issueOpt = array("class"=>"custom-select form-control required select","name"=>"form-via","id"=>"form-via");
-																		echo str_replace('><', '>I got to know about Interaktiv Foundation\'s membership via:<', SelectList($mySforceConnection, 'Contact', 'How_I_know_BCF_Membership__c', 'Know',$issueOpt));
-																	?>
-					                        </div>
-
-					                         <div class="form-group">
-					                        	<label class="checkbox-inline"><input type="checkbox" value="diag" id="diag" name="diag"><p>Diagnosed with breast cancer</p></label>
-					                        </div>
-
-				                        	<div class="form-group" id="cancer" style="display: none">
-					                        	<input type="text" name="form-diag-when" placeholder="when did you complete your treatment (other than hormonal therapy)? " class="form-last-name form-control" id="form-birth-when">
-					                     	</div>
-
-					                     	<div class="form-group">
-					                        	<label class="checkbox-inline"><input type="checkbox" class="required" value="agree" id="agree" name="agree"><p>I agree to the <a href="#" class="tos">terms & conditions</a> and <a href="volunteer.pdf" class="" target="_blank">Secrery Agreement</a>  of this sign up</p></label>
-					                        </div>
-					                        <button type="submit" class="btn" id="submit">Sign me up!</button>
-
-					                        
-					                    </div>
-				                    </fieldset> 
-			                    </div>
-			                    <div class="col-sm-6 nopadding">
-				                    <fieldset>
-			                        	<br />
-			                            <div class="form-bottom">
-			                            	<div class="devRight right1">
-				                            	<div class="row">
+					                        <div class="row">
 							                        <div class="form-group col-md-6">
 							                        	<label class="sr-only" for="form-birth-year">Date of Birth</label>
 							                        	<input type="text" name="form-birth-year" placeholder="Date of Birth" class="form-last-name form-control " id="form-birth-year" required="" pattern="\d{1,2}/\d{1,2}/\d{4}">
@@ -156,6 +113,38 @@ error_reporting(E_ERROR);
 							                        	<input type="text" name="form-postal-code" placeholder="Postal Code..." class="form-last-name form-control " id="form-postal-code" required>
 						                        	</div>
 						                        </div>
+
+					                        <div class="form-group">
+					                        	<label class="sr-only" for="form-category">Membership Category</label>
+					                        	<?php
+																		$issueOpt = array("class"=>"custom-select form-control required select","name"=>"form-category","id"=>"form-category");
+																		echo str_replace('><', '>Membership Category<', SelectList($mySforceConnection, 'Contact', 'Membership_Category__c', 'How',$issueOpt));
+																		?>
+					                        </div>
+
+					                        <div class="form-group">
+					                        	<label class="sr-only" for="form-know">I got to know about Interaktiv Foundation's' membership via:</label>
+					                        	
+																	<?php
+																		$issueOpt = array("class"=>"custom-select form-control required select","name"=>"form-via","id"=>"form-via");
+																		echo str_replace('><', '>I got to know about Interaktiv Foundation\'s membership via:<', SelectList($mySforceConnection, 'Contact', 'How_I_know_BCF_Membership__c', 'Know',$issueOpt));
+																	?>
+					                        </div>
+
+					                     	<div class="form-group">
+					                        	<label class="checkbox-inline"><input type="checkbox" class="required" value="agree" id="agree" name="agree"><p>I agree to the <a href="#" class="tos">terms & conditions</a> and <a href="volunteer.pdf" class="" target="_blank">Secrery Agreement</a>  of this sign up</p></label>
+					                        </div>
+					                        <button type="submit" class="btn" id="submit">Sign me up!</button>
+
+					                        
+					                    </div>
+				                    </fieldset> 
+			                    </div>
+			                    <div class="col-sm-6 nopadding">
+				                    <fieldset>
+			                        	<br />
+			                            <div class="form-bottom">
+			                            	<div class="devRight right1">
 						                        					                         
 						                        <div class="form-group">
 						                        	<label class="sr-only" for="form-address">Mailing Address</label>
@@ -164,16 +153,8 @@ error_reporting(E_ERROR);
 						                        </div>
 						                    </div>
 
-						                    <div class="ibtn dimmer2">
-						                        <div class="form-group">
-						                        	<center><img src="assets/img/volunteer.png" id="btn-volunteer"  style="width:300px;height:150px;cursor:pointer"/></center>
-						                        </div>
-						                    </div>
-					                        
-					                       	
 
-
-				                       	<div class="devRight right2 dimmer">
+				                       	<div class="devRight right2">
 					                        <div class="form-group">
 						                    	<textarea name="form-why" placeholder="Why are you interested in volunteering with Interaktiv Foundation?" class="form-last-name form-control "></textarea> 
 						                    </div>
@@ -206,7 +187,7 @@ error_reporting(E_ERROR);
 					                        	<input type="text" name="form-org-period" placeholder="Period of volunteering" class="form-role-name form-control" id="form-role-name" style="margin-top:10px">
 					                        </div>
 
-					                        <div class="form-group">
+					                        <div class="form-group dimmer">
 						                        	
 						                        	<textarea name="form-qualities" placeholder="What qualities and /or skills can you contribute to Interaktiv Foundation Volunteer Programme? " class="form-last-name form-control " ></textarea> 
 						                     </div>

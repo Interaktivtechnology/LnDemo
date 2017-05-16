@@ -1,10 +1,10 @@
 <?php
 
-require_once (PHP_DIR.'/soapclient/SforceEnterpriseClient.php');
-
+require_once (__DIR__.'/soapclient/SforceEnterpriseClient.php');
+require_once("config.php");
 try {
     $mySforceConnection = new SforceEnterpriseClient();
-    $mySforceConnection->createConnection(PHP_DIR."/soapclient/enterprise.wsdl.xml");
+    $mySforceConnection->createConnection(__DIR__."/soapclient/enterprise.wsdl.xml");
     $mySforceConnection->login(SF_USERNAME, SF_PASSWORD . SF_SECURITY_TOKEN);
 } catch (Exception $e) {
     die($e->faultstring);
@@ -103,6 +103,32 @@ function responseFgkey($secret, $mid, $reference, $currency, $amount, $rescode, 
     return $fgkey;
 }
 
+function SelectList($client, $objectType, $fieldName, $selected = null, $options = array()) {
+    $result = $client->describeSObject($objectType);
+    foreach ($result->fields as $field) {
+        if ($field->name == $fieldName) {
+            $selectString = "\n\t<select ";
+            if(!array_key_exists("name", $options)) $selectString .= "name=\"" . $fieldName . "\" ";
+            
+            //else unset($options["name"]);
+            foreach ($options as $key => $value) {
+                $selectString .= $key ."=\"". $value ."\" ";
+            }
+            $selectString .= ">";
+            if(!array_key_exists("multiple", $options)) {
+                $defaultVal = (array_key_exists("default", $options)) ? $options['default'] : "";
+                $selectString .= "\n\t\t<option value=\"\">". $defaultVal ."</option>";
+            }
+            foreach ($field->picklistValues as $value) {
+                $select = ($value->label == $selected) ? ' selected="selected" ' : '';
+                $value = htmlspecialchars($value->label);
+                $selectString .= "\n\t\t<option " . $select . " value=\"" . $value . "\">" . $value . "</option>";
+            }
+            $selectString .= "\n\t</select>";
+        }
+    }
+    return utf8_decode($selectString);
+}
 ?>
 
 
