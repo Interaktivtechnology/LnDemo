@@ -187,7 +187,7 @@ error_reporting(E_ERROR);
 					                        	<input type="text" name="form-org-period" placeholder="Period of volunteering" class="form-role-name form-control" id="form-role-name" style="margin-top:10px">
 					                        </div>
 
-					                        <div class="form-group dimmer">
+					                        <div class="form-group">
 						                        	
 						                        	<textarea name="form-qualities" placeholder="What qualities and /or skills can you contribute to Interaktiv Foundation Volunteer Programme? " class="form-last-name form-control " ></textarea> 
 						                     </div>
