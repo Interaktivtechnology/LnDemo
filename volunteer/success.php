@@ -6,7 +6,7 @@ session_start();
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-		<title>Breast Cancer Foundation - Success</title>
+		<title>Interaktiv Foundation</title>
 		
 
         <!-- CSS -->
@@ -55,33 +55,12 @@ session_start();
 <body>
 
 	<div class="container">
-		<nav role="navigation" class="navbar navbar-inverse navbar-no-bg">
-			<div class="container main">
-				<div class="navbar-header">
-					<button data-target="#top-navbar-1" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
-						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<a href="index" class="navbar-brand">Breast Cancer Foundation</a>
-				</div>
-				<!-- Collect the nav links, forms, and other content for toggling -->
-				<div id="top-navbar-1" class="collapse navbar-collapse">
-					<ul class="nav navbar-nav navbar-right">
-						
-					</ul>
-				</div>
-			</div>
-		</nav>
 		<div class="row">
 			<div class="col-md-6 col-md-offset-3 panel panel-default">
 			<br />
-				<center>
-					<img src="assets/img//thank-you-circle.png" width="200px"/>
-				</center>
+				
 				<p>
-					Thank you for volunteering with Breast Cancer Foundation! 
+					Thank you for volunteering with InterAktiv Foundation! 
 				</p>
 				<p>
 					 We will be in touch with you soon

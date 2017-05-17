@@ -1,5 +1,5 @@
 <?php
-//error_reporting(0);
+error_reporting(E_ALL);
 session_start();
 include 'sf.php';
 ob_start();
@@ -11,7 +11,7 @@ if(isset($_SESSION['error_message'])){
 function checkEmail($email){
     global $mySforceConnection;
     try{
-        $query = "select id from Account where Email = '$email' LIMIT 1";
+        $query = "select id from Account where Email__c = '$email' LIMIT 1";
         $data = $mySforceConnection->query(($query));
         if(isset($data->records[0]->Id)){
             return 'duplicate';
@@ -109,7 +109,7 @@ if(isset($contact->records[0]->Membership_Application_date__c)){
 }
 if(isset($contact->records[0]->Volunteer_Status__c)){
     $is_volunteer = '1';
-    $error_message[] = "You may already be a member / volunteer in our system, Please contact BCF for assistance";
+    $error_message[] = "You may already be a member / volunteer in our system, Please contact Interaktiv for assistance";
 }
 
 if(!isset($error_message[0])){
@@ -120,13 +120,13 @@ if(!isset($error_message[0])){
     } catch (Exception $e) {
         die($e->faultstring);
     }
-    
+
     if(is_array($data->records)){
         foreach($data->records as $record){
-            if($record->Name == 'Individual' && $record->SobjectType == 'Account'){
+            if($record->Name == 'Individual Donors' && $record->SobjectType == 'Account'){
                 $rectypeAcc = $record->Id;
             }
-            if($record->Name == 'Individual' && $record->SobjectType == 'Contact'){
+            if($record->Name == 'Individual Donor' && $record->SobjectType == 'Contact'){
                 $rectypeCon = $record->Id;
             }
         }
@@ -163,6 +163,10 @@ if(!isset($error_message[0])){
     $pref = $_POST['form-preferred-name'];
     $cat = $_POST['form-category'];
     
+    if(isset($_POST['diag'])){
+        $diag = 'been diagnosed with Breast Cancer';
+    }
+
     $mode = 'new';
 
     $query = "SELECT Id, ID_NO__C, Email__c FROM Account WHERE ID_NO__C = '$idno' OR Email__c  = '$email' LIMIT 1";
@@ -174,7 +178,7 @@ if(!isset($error_message[0])){
             $mode = 'new';
         }
     }
-
+    echo $mode;
     if($mode == 'new'){
         if(isset($rectypeAcc)){
 
@@ -202,20 +206,20 @@ if(!isset($error_message[0])){
             if(isset($idx)){
                 $records[0]->Id = $idx;
             }
-        }
+        
 
-        /*
-        if(is_array($_POST['interest'])){
-            $interest = implode(';', $_POST['interest']);
-            $request .= 'VOLUNTEER AREA OF INTERESTS : '.$interest."\n";
-        }
-        */
+            /*
+            if(is_array($_POST['interest'])){
+                $interest = implode(';', $_POST['interest']);
+                $request .= 'VOLUNTEER AREA OF INTERESTS : '.$interest."\n";
+            }
+            */
+            try {
+                $response = $mySforceConnection->upsert('Id', $records, 'Account');
+            } catch (Exception $e) {
+                die($e->faultstring);
 
-        try {
-            $response = $mySforceConnection->upsert('Id', $records, 'Account');
-        } catch (Exception $e) {
-            die($e->faultstring);
-
+            }
         }
 
         if(isset($response[0]->success) AND $response[0]->success == '1' ){
@@ -277,7 +281,7 @@ if(!isset($error_message[0])){
 
     $mode = 'new';
 
-    $query = "SELECT Id, Email, ID_NO__C FROM Contact WHERE ID_NO__C = '$idno' OR Email = '$email' LIMIT 1";
+    $query = "SELECT Id, Email, ID_NO__C FROM Contact WHERE ID_NO__C = '$idno' OR Email  = '$email' LIMIT 1";
     $contact = $mySforceConnection->query(($query));
     if(isset($contact->records[0]->Id)){
         $idc = $contact->records[0]->Id;
@@ -302,11 +306,18 @@ if(!isset($error_message[0])){
                 $contact[0]->ID_No__c = $idno;
                 $contact[0]->RecordTypeId = $rectypeCon;
                 $contact[0]->ID_Type__c = $idtype;
-                //$contact[0]->EMAIL = $email;
-                $contact[0]->Email = $email;
-                
+                $contact[0]->EMAIL = $email;
+                //$contact[0]->Email__c = $email;
+                if($_POST['diag'] == 'diag'){
+                    $contact[0]->I_have__c = 'been diagnosed with Breast Cancer';
+                }
+
                 if(isset($pref) AND strlen($pref) > 1){
                     $contact[0]->Preferred_Name__c = ucwords(strtolower($pref));
+                }
+
+                if($_POST['form-diag-when']){
+                    //$contact[0]->Completed_Treatment__c = $_POST['form-diag-when'];
                 }
 
                 if(isset($_POST['form-birth-year'])){
@@ -323,6 +334,13 @@ if(!isset($error_message[0])){
                 if($_POST['form-gender']){
                     $contact[0]->Gender__c = $_POST['form-gender'];
                 }
+                
+                if(isset($diag)){
+                    $contact[0]->I_have__c = $diag;
+                }
+                if(isset($_POST['form-diag-when'])){
+                    //$contact[0]->Completed_Treatment__c = $_POST['form-diag-when'];
+                }  
 
                 if(isset($_POST['form-have-role'])){
                     $contact[0]->Previous_Volunteer_Role__c = $_POST['form-have-role'];
@@ -348,10 +366,14 @@ if(!isset($error_message[0])){
                     $contact[0]->Volunteer_Skill__c = $_POST['form-qualities'];
                 }
 
+                /*
                 if(isset($_POST['inputvolunteer']) && $_POST['inputvolunteer'] == '1'){
                     $contact[0]->Volunteer_Application_Date__c = date('Y-m-d');
                     $contact[0]->Volunteer_Status__c = 'Prospect';
                 } 
+                */
+                $contact[0]->Volunteer_Application_Date__c = date('Y-m-d');
+                $contact[0]->Volunteer_Status__c = 'Prospect';
 
                 if(isset($_POST['inputmember']) && $_POST['inputmember'] == '1' ){
                     $contact[0]->Membership_Application_date__c = date('Y-m-d');
@@ -365,22 +387,22 @@ if(!isset($error_message[0])){
                     $contact[0]->Vsource__c = rawurldecode($_POST['vsource']);
                 }
                 else{
-                    $contact[0]->Vsource__c = 'BCF Web Site';
+                    $contact[0]->Vsource__c = 'Web Site';
                 }
 
                 if(isset($_POST['msource']) AND strlen($_POST['msource']) > 2){
-                    $contact[0]->Msource__c = rawurldecode($_POST['msource']);
+                    //$contact[0]->Msource__c = rawurldecode($_POST['msource']);
                 }
                 else{
-                    $contact[0]->Msource__c = 'BCF Web Site';
+                    //$contact[0]->Msource__c = 'Web Site';
                 }
 
                 if(isset($_POST['form-via']) AND strlen($_POST['form-via']) > 2){
-                    $contact[0]->How_I_know_BCF_Membership__c = rawurldecode($_POST['form-via']);
+                    $contact[0]->How_I_know_Interaktiv_Membership__c = rawurldecode($_POST['form-via']);
                 }
 
                 if(isset($_POST['form-category']) AND strlen($_POST['form-category']) > 2){
-                    $contact[0]->Membership_Category__c = rawurldecode($_POST['form-category']);
+                    //$contact[0]->Membership_Category__c = rawurldecode($_POST['form-category']);
                 }
                 //
                 
@@ -440,10 +462,26 @@ if(!isset($error_message[0])){
             $request .= 'Postal Code : '.$postcode."\n";
         }
 
+        if($_POST['diag'] == 'diag'){
+            $request .= 'I Have : been diagnosed with Breast Cancer'."\n";
+        }
+
+        if($_POST['form-diag-when']){
+            $request .= 'Completed Treatment : '.$_POST['form-diag-when']."\n";
+        }
+
         if($_POST['form-phone']){
             $request .= 'Phone : '.$_POST['form-phone']."\n";
         }
         
+        if(isset($diag)){
+            $request .= 'I_have__c : '.$diag."\n";
+        }
+
+        if(isset($_POST['form-diag-when'])){
+            $request .= 'Completed_Treatment__c : '.$_POST['form-diag-when']."\n";
+        }  
+
         if(isset($_POST['form-have-role'])){
             $request .= 'Previous_Volunteer_Role__c : '.$_POST['form-have-role']."\n";
         } 
@@ -490,7 +528,6 @@ if(!isset($error_message[0])){
         }
         $accid = $idc;
     }
-    
     header('Location:success.php');
     exit;
 }
