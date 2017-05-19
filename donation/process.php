@@ -228,17 +228,18 @@ if (isset($_POST)) {
         $donation[0]->Donor_Name__c = $accid;
         $donation[0]->Contact_Name__c = $contactId;
         $donation[0]->Donation_Date__c = date("Y-m-d", time());
-        $donation[0]->Channel_of_Donation__c = "BCF Web Site";
+        $donation[0]->Channel_of_Donation__c = "Web Site";
         $donation[0]->Donation_Status__c = "Received";
         $donation[0]->Amount__c = $form['amount'];
         $donation[0]->Payment_Method__c = "Credit Card";
         $donation[0]->Campaign_Name__c = $form['Campaign_Name__c'];
         $donation[0]->Donation_Purpose__c = $form['Donation_Purpose__c'];
+        $donation[0]->Cleared_Date__c = date("Y-m-d", time());
         if(isset($form['channel']) AND strlen($form['channel']) > 3){
             $donation[0]->Channel_of_Donation__c = $form['channel'];
         }
         else{
-            $donation[0]->Channel_of_Donation__c = "BCF Web Site";
+            $donation[0]->Channel_of_Donation__c = "Web Site";
         }
         if(isset($form['leadsource']) AND strlen($form['leadsource']) > 3){
             $donation[0]->LeadSource__c = $form['leadsource'];
