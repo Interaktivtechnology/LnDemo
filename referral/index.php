@@ -740,7 +740,7 @@ require_once("library/FunctionLib.php");
         <div class="col-md-12">
             <input type="hidden" name="referral_token" value="<?=$referral_token?>" />
             <br />
-            <button class="btn btn-success btn-lg btn-block" type="submit">Make Donation</button>
+            <button class="btn btn-success btn-lg btn-block" type="submit">Submit</button>
             <br />
         </div>
     </div>
