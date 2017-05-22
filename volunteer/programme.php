@@ -39,7 +39,7 @@ try {
     $participant_data = $mySforceConnection->query(($query));
     $participant_record = $participant_data->records[0];
         
-    if(isset($participant_record->status__c) && $participant_record->status__c != 'Selected'){
+    if($participant_record->status__c != 'Selected'){
         $error = 'link is expired';
     }    
 }
