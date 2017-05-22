@@ -1,3 +1,53 @@
+<?php 
+session_start();
+ini_set("soap.wsdl_cache_enabled",0);
+include_once('sf.php');
+error_reporting(0);
+
+$programmeid = $_REQUEST['programme'];
+$participant = $_REQUEST['participant'];
+if(!isset($participant) || !isset($programmeid)){
+	$error = 'link is invalid';
+}
+$query = "SELECT Id,Ttile__c FROM Programme_Event__c WHERE Id = '$programmeid' LIMIT 1";
+try {
+    $programme = $mySforceConnection->query(($query));
+    $programme_record = $programme->records[0];
+    $title = $programme_record->Ttile__c;
+    $prog_id = $programme_record->Id;
+}
+catch(Exception $e) {
+   $error = 'link is invalid';
+}
+
+$query = "SELECT Id FROM Participant__c WHERE  Participating_Programme_Event__c  ='$programmeid' AND status__c = 'Accepted' ";
+try {
+    $participant_data = $mySforceConnection->query(($query));
+    $participant_record = $participant_data->records[0];
+    $records = count($participant_data->records);
+    if($records > 1){
+        $error = 'The volunteers for this programme is already fullfilled.';
+    }
+
+}
+catch(Exception $e) {
+   $error = 'link is invalid';
+}
+
+$query = "SELECT Id,Name, Status__c FROM Participant__c WHERE Id = '$participant' AND Participating_Programme_Event__c  ='$programmeid' LIMIT 1";
+try {
+    $participant_data = $mySforceConnection->query(($query));
+    $participant_record = $participant_data->records[0];
+        
+    if(isset($participant_record->status__c) && $participant_record->status__c != 'Selected'){
+        $error = 'link is expired';
+    }    
+}
+catch(Exception $e) {
+   $error = 'link is invalid';
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -118,14 +168,35 @@
                         
                         <div class="col-sm-9 col-sm-offset-1 form-box" style="opacity: 0.9;">
                             <img src="assets/img/old_logo.jpg" width="150px"/><br /><br />
-                                <div class="col-sm-12" style="background: #EEEEEE;border:25px solid #fff;margin-top: 20%">
+                        	<?php if(!isset($error)) { ?>
+                        	<form role="form" action="accept.php" method="post" class="registration-form update2" style="margin-top: 15%">
+                        		<div class="col-sm-12" style="background: #EEEEEE;border:25px solid #fff">
 	                        		<div class="col-sm-12 nopadding">
 		                        		<center>
-		                        			<h1>Thank you for your participation, we will contact you soon.</h1>
+		                        			<h1><?php echo $title; ?></h1>
+		                        			<br />
+		                        			Click the button below if you want to become a participant of this programme:
+		                        			<input type="hidden" name="participant_id" value="<?php echo $participant_record->Id; ?>"/>
+		                        			<input type="hidden" name="programme_id" value="<?php echo $programme_record->Id; ?>"/>
+		                        			<br />
+		                        			<br />
+		                        			    <button class="btn btn-large btn-block btn-success" style="background-color:#2A6CAB;" type="submit">Yes, I want to Join!</button>
+		                        			   <br />
 		                        		</center>
 
 				                    </div>
 		                    	</div>
+		                    </form>
+                            <?php } else { ?>
+                                <div class="col-sm-12" style="background: #EEEEEE;border:25px solid #fff;margin-top: 20%">
+	                        		<div class="col-sm-12 nopadding">
+		                        		<center>
+		                        			<h1><?php echo $error; ?></h1>
+		                        		</center>
+
+				                    </div>
+		                    	</div>
+                            <?php } ?>
 		                    <br />
                         </div>
                     </div>
