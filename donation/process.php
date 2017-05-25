@@ -253,8 +253,8 @@ if (isset($_POST)) {
         if($createDonation[0]->success) {
             
             $response_state = "success";
-            $response_message = "Success, our team will contact you soon.";
-                /*
+            $response_message = "Please wait while redirecting to payment gateway";
+            
             //MCP payment - create form post data to MCP
             $fgkey = generateFgkey(MCP_KEY, MCP_MID, $createDonation[0]->id, MCP_CURRENCY, $form['amount']);
             $dform = '<form action="'.MCP_URL.'" method="post" name="donation" id="donation">';
@@ -274,7 +274,7 @@ if (isset($_POST)) {
             $dform .= '<input type="hidden" name="fgkey" value="'.$fgkey.'">';
             $dform .= '</form>';
             $js = '<script type="text/javascript">document.donation.submit();</script>';
-            */
+            
         } else {
             $response_state = "danger";
             $response_message = "Unable to create donation record.";
@@ -305,19 +305,33 @@ if (isset($_POST)) {
 
             <div class="card card-container">
 
+                <!--<img id="profile-img" class="profile-img-card" src="images/logo_boystown2.png" />//-->
                 <br />
                 <div class="alert alert-<?=$response_state?>">
-                    <center><strong><?=$response_message?></strong></center>
+                    <center><strong><?=$response_message?><br></strong></center>
+                    <?=$dform?>
+                    <ul>
+                    <?php
+                    foreach ($form_message as $key => $value) {
+                        echo "<li>".$value."</li>";
+                    }
+                    ?>
+                    </ul>
                 </div>
-                <button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace('index.php')">Return to homepage</button>
-
+                <?php
+                if($response_state == "danger") {
+                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'https://test.interaktiv.sg/Boystown/donation/\')">Back</button>';
+                } else {
+                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'https://boystown.org.sg/home.html\')">Return to homepage</button>';
+                }
+                ?>
             </div><!-- /card-container -->
         </div><!-- /container -->
         <!-- Required - jQuery -->
         <script src="js/jquery-2.1.1.min.js"></script>
         <!-- Required - Bootstrap JS -->
         <script src="js/bootstrap.min.js"></script>
-
+        <?=$js?>
 
 
     </body>

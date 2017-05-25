@@ -10,9 +10,9 @@ define("SF_SECURITY_TOKEN", "qZZ13ujzgxOMZjNQsAJHxzg1O");
 
 /* MCP Config */
 define("MCP_CURRENCY", "SGD");
-define("MCP_MID", "3115060001");
-define("MCP_KEY", "DV8DgLRYAF4nuZhqgZMTqsAtdr9Cx0bM");
-define("MCP_URL", "https://maptest.mcpayment.net/payment/dopayment");
-define("STATUS_URL", 'http://'.$_SERVER['HTTP_HOST']."/donation/status.php");
-define("RETURN_URL", 'http://'.$_SERVER['HTTP_HOST']."/donation/result.php");
-define("REGISTRATION_URL", 'http://'.$_SERVER['HTTP_HOST']."/donation/index.php");
+define("MCP_MID", "3116090007");
+define("MCP_KEY", "3116090007");
+define("MCP_URL", "https://map.uat.mcpayment.net/Payment/DoPayment");
+define("STATUS_URL", 'https://test.interaktiv.sg/demo/donation/status.php');
+define("RETURN_URL", 'https://test.interaktiv.sg/demo/donation/result.php');
+define("REGISTRATION_URL", 'https://test.interaktiv.sg/demo/donation/index.php');
