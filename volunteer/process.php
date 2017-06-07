@@ -350,6 +350,10 @@ if(!isset($error_message[0])){
                     $contact[0]->Previous_Volunteer_Period__c = $_POST['form-have-period'];
                 }
 
+                if(isset($_POST['agree']) AND $_POST['agree'] == 'agree'){
+                    $contact[0]->PDPA_Signed__c = TRUE;
+                }
+
                 if(isset($_POST['form-org-name'])){
                     $contact[0]->Other_Organization_Volunteered__c = $_POST['form-org-name'];
                 }
