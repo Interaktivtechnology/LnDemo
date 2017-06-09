@@ -32,9 +32,9 @@ if(isset($contact->records[0]) AND isset($contact->records[0]->Email)){
     }
     if(isset($response[0]->success) AND $response[0]->success == '1' ){
         $email = $contact->records[0]->Email;
-		$emailFrom = 'admin@bcf.com.sg';
+		$emailFrom = 'admin@interaktiv.sg';
 
-		$message = 'please click the link <a href="http://'.$_SERVER['HTTP_HOST'].'/bcf/php/invitation?code='.$code.'">Link</a>';
+		$message = 'please click the link [link]';
 				
 
 		$subject = "Invitation";

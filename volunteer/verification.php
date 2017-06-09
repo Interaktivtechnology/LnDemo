@@ -56,7 +56,7 @@ else{
 }	
 ?>
 <!DOCTYPE html>
-<title>Breast Cancer Foundation</title>
+<title>InterAktiv Foundation</title>
 <style>
   body { text-align: center; padding: 150px; }
   h1 { font-size: 50px; }
