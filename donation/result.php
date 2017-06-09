@@ -16,7 +16,7 @@ require_once 'library/FunctionLib.php';
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Breast Cancer Foundation Donation - Result</title>
+    <title>InterAktiv Donation - Result</title>
 
     <!-- Optional - Google font -->
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Gafata" />
