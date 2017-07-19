@@ -255,7 +255,7 @@ if (isset($_POST)) {
             
             $response_state = "success";
             $response_message = "Please wait while redirecting to payment gateway";
-            if($_POST['payment_method'] != 'paypal'){
+            if($form['payment_method'] != 'paypal'){
                 //MCP payment - create form post data to MCP
                 $fgkey = generateFgkey(MCP_KEY, MCP_MID, $createDonation[0]->id, MCP_CURRENCY, $form['amount']);
                 $dform = '<form action="'.MCP_URL.'" method="post" name="donation" id="donation">';
@@ -278,10 +278,10 @@ if (isset($_POST)) {
             }
             else{
                 
-            $dform = '<form action="<?php echo PAYPAL_URL; ?>" method="post" name="donation" id="donation">';
-            $dform .= '<input type="hidden" name="business" value="<?php echo PAYPAL_SELLER_EMAIL; ?>">';
+            $dform = '<form action="'.PAYPAL_URL.'" method="post" name="donation" id="donation">';
+            $dform .= '<input type="hidden" name="business" value="'.PAYPAL_SELLER_EMAIL.'">';
             $dform .= '<input type="hidden" name="cmd" value="_xclick">';
-            $dform .= '<input type="hidden" name="item_name" value="InterAktiv DONATION #<?php echo $createDonation[0]->id; ?>">';
+            $dform .= '<input type="hidden" name="item_name" value="InterAktiv Donation>">';
             $dform .= '<input type="hidden" name="item_number" value="'.$createDonation[0]->id.'">';
             $dform .= '<input type="hidden" name="amount" value="'.$form['amount'].'">';
             $dform .= '<input type="hidden" name="currency_code" value="SGD">';
