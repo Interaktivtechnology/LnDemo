@@ -285,8 +285,8 @@ if (isset($_POST)) {
             $dform .= '<input type="hidden" name="item_number" value="'.$createDonation[0]->id.'">';
             $dform .= '<input type="hidden" name="amount" value="'.$form['amount'].'">';
             $dform .= '<input type="hidden" name="currency_code" value="SGD">';
-            $dform .= '<input type="hidden" name="cancel_return" value="http://'.$_SERVER['HTTP_HOST'].'">';
-            $dform .= '<input type="hidden" name="cancel_return" value="http://'.$_SERVER['HTTP_HOST'].'/success.php">';
+            $dform .= '<input type="hidden" name="cancel_return" value="'.PAYPAL_CANCEL_URL.'">';
+            $dform .= '<input type="hidden" name="return" value="'.PAYPAL_SUCCESS_URL.'">';
             $dform .= '</form>';
             $js = '<script type="text/javascript">document.donation.submit();</script>';
             }

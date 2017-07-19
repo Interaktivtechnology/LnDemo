@@ -17,4 +17,6 @@ define("STATUS_URL", 'https://test.interaktiv.sg/demo/donation/status.php');
 define("RETURN_URL", 'https://test.interaktiv.sg/demo/donation/result.php');
 define("REGISTRATION_URL", 'https://test.interaktiv.sg/demo/donation/index.php');
 define("PAYPAL_URL", 'https://www.sandbox.paypal.com/cgi-bin/webscr');
+define("PAYPAL_SUCCESS_URL", 'http://www.lndemo.dev/donation/success.php');
+define("PAYPAL_CANCEL_URL", 'http://www.lndemo.dev/donation/index.php');
 define("PAYPAL_SELLER_EMAIL", 'adminrht@gmail.com');
