@@ -156,16 +156,16 @@ require_once("library/FunctionLib.php");
 						                        </div>
 						                    </div>
 
-                                            <div class="form-group">
-                                                <label for="id_no" class="col-sm-3 control-label">ID Type</label>
-                                                <div class="col-sm-9">
-                                                    <select class=" select" id="id_type" name="id_type" required="">
-                                                     <option value="N/A"  <?php if(!isset($_GET['idno'])) echo 'selected="selected"' ;?>>N/A</option>
-                                                    <option value="nric" <?php if(isset($_GET['idno'])) echo 'selected="selected"' ;?> >NRIC</option>
-                                                    <option value="fin">FIN</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+																<div class="form-group">
+																		<label for="id_no" class="col-sm-3 control-label">ID Type</label>
+																		<div class="col-sm-9">
+																				<select class=" select" id="id_type" name="id_type" required="">
+																					<option value="N/A"  <?php if(!isset($_GET['idno'])) echo 'selected="selected"' ;?>>N/A</option>
+																				<option value="nric" <?php if(isset($_GET['idno'])) echo 'selected="selected"' ;?> >NRIC</option>
+																				<option value="fin">FIN</option>
+																				</select>
+																		</div>
+																</div>
                                             
 						                    <div class="form-group">
 						                        <label for="email" class="col-sm-3 control-label">Email</label>
@@ -173,43 +173,55 @@ require_once("library/FunctionLib.php");
 						                            <input type="text" class="form-control" maxlength="30" value="<?php if(isset($_GET['email'])) echo $_GET['email'] ?>"  id="email" name="email" required="" data-validation="email">
 						                        </div>
 						                    </div>
-                                            <div class="form-group">
-                                                <label for="id_no" class="col-sm-3 control-label">Donation Purpose</label>
-                                                <div class="col-sm-9">
-                                                    <?=SelectList($mySforceConnection, 'Donation__c', 'Donation_Purpose__c', null, array("class"=>"select", "required" => "required"))?>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="id_no" class="col-sm-3 control-label">Campaign Name</label>
-                                                <div class="col-sm-9">
-                                                    <select class=" select" id="Campaign_Name__c" name="Campaign_Name__c" required="">
-                                                    <option value="">Please select campaign</option>
-                                                    <?php
-                                                    try {
-                                                        //Campaign
-                                                        $queryCampaign = "SELECT Id, Name FROM Campaign WHERE IsActive = true";
-                                                        $campaign = $mySforceConnection->query($queryCampaign);
-                                                    } catch (Exception $e) {
-                                                        die($e->faultstring);
-                                                    }
-                                                    for($i=0; $i<count($campaign->records); $i++) {
-                                                        echo '<option value="'. $campaign->records[$i]->Id .'">'. $campaign->records[$i]->Name .'</option>';
-                                                    }
-                                                    ?>
-                                                    </select>
-                                                </div>
-                                            </div>
+
+																<div class="form-group">
+																		<label for="id_no" class="col-sm-3 control-label">Donation Purpose</label>
+																		<div class="col-sm-9">
+																				<?=SelectList($mySforceConnection, 'Donation__c', 'Donation_Purpose__c', null, array("class"=>"select", "required" => "required"))?>
+																		</div>
+																</div>
+
+																<div class="form-group">
+																		<label for="id_no" class="col-sm-3 control-label">Campaign Name</label>
+																		<div class="col-sm-9">
+																				<select class=" select" id="Campaign_Name__c" name="Campaign_Name__c" required="">
+																				<option value="">Please select campaign</option>
+																				<?php
+																				try {
+																						//Campaign
+																						$queryCampaign = "SELECT Id, Name FROM Campaign WHERE IsActive = true";
+																						$campaign = $mySforceConnection->query($queryCampaign);
+																				} catch (Exception $e) {
+																						die($e->faultstring);
+																				}
+																				for($i=0; $i<count($campaign->records); $i++) {
+																						echo '<option value="'. $campaign->records[$i]->Id .'">'. $campaign->records[$i]->Name .'</option>';
+																				}
+																				?>
+																				</select>
+																		</div>
+																</div>
+
+																<div class="form-group">
+																		<label for="payment_method" class="col-sm-3 control-label">Payment Method</label>
+																		<div class="col-sm-9" style="text-align:left">
+																				<input type="radio" name="payment_method" id="payment_method1" value="credit_card" checked="checked"/>
+																				<label for="payment_method1"><img src="images/credit_card.png" width="100px" /></label>
+																				<label for="payment_method2">
+																				<input type="radio" name="payment_method" id="payment_method2" value="paypal" /><img src="images/paypal.png" width="100px" /></label>
+																		</div>
+																</div> 
+
 						                    <div class="form-group">
-						                        <label for="amount" class="col-sm-6 control-label">I wish to donate</label>
-						                        <div class="col-sm-6">
-                                                    <div class="input-group ">
-                                                        <span class="input-group-addon">SGD</span>    
-                                                         <input type="text" class="form-control" id="amount" value="<?php if(isset($_GET['amount'])) echo $_GET['amount'] ?>" name="amount" required="" data-validation="minimum_donation">
-                                                    </div>
-                                                   
-						                            
+						                        <label for="amount" class="col-sm-3 control-label">I wish to donate</label>
+						                        <div class="col-sm-9">
+																			<div class="input-group col-sm-6 ">
+																					<span class="input-group-addon">SGD</span>    
+																						<input type="text" class="form-control" id="amount" value="<?php if(isset($_GET['amount'])) echo $_GET['amount'] ?>" name="amount" required="" data-validation="minimum_donation">
+																			</div>                                                   
 						                        </div>
-						                    </div> 
+						                    </div>
+                        
 
 											<div class="row">
 												<div class="col-md-12">

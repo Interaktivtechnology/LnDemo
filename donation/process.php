@@ -57,6 +57,7 @@ $ccnumber = $form['cc_num'];
 $ccexp = str_replace('/','',$form['cardExpiry']);
 $ccexp = explode('/',$form['cardExpiry']);
 $ccexp = $ccexp[0].($ccexp[1]-2000);
+$_SESSION['amount'] = $form['amount'];
 function cardType($number)
 {
     $number=preg_replace('/[^\d]/','',$number);
@@ -254,26 +255,41 @@ if (isset($_POST)) {
             
             $response_state = "success";
             $response_message = "Please wait while redirecting to payment gateway";
-            
-            //MCP payment - create form post data to MCP
-            $fgkey = generateFgkey(MCP_KEY, MCP_MID, $createDonation[0]->id, MCP_CURRENCY, $form['amount']);
-            $dform = '<form action="'.MCP_URL.'" method="post" name="donation" id="donation">';
-            $dform .= '<input type="hidden" name="mid" value="'.MCP_MID.'">';
-            $dform .= '<input type="hidden" name="txntype" value="SALE">';
-            $dform .= '<input type="hidden" name="reference" value="'.$createDonation[0]->id.'">';
-            $dform .= '<input type="hidden" name="cur" value="'.MCP_CURRENCY.'">';
-            $dform .= '<input type="hidden" name="amt" value="'.$form['amount'].'">';
-            $dform .= '<input type="hidden" name="shop" value="Breast Cancer Foundation">';
-            $dform .= '<input type="hidden" name="buyer" value="'.$form['name'].'">';
-            $dform .= '<input type="hidden" name="email" value="'.$form['email'].'">';
-            $dform .= '<input type="hidden" name="tel" value="63526560">';
-            $dform .= '<input type="hidden" name="product" value="Donation">';
-            $dform .= '<input type="hidden" name="lang" value="EN">';
-            $dform .= '<input type="hidden" name="statusurl" value="'.STATUS_URL.'">';
-            $dform .= '<input type="hidden" name="returnurl" value="'.RETURN_URL.'">';
-            $dform .= '<input type="hidden" name="fgkey" value="'.$fgkey.'">';
+            if($_POST['payment_method'] != 'paypal'){
+                //MCP payment - create form post data to MCP
+                $fgkey = generateFgkey(MCP_KEY, MCP_MID, $createDonation[0]->id, MCP_CURRENCY, $form['amount']);
+                $dform = '<form action="'.MCP_URL.'" method="post" name="donation" id="donation">';
+                $dform .= '<input type="hidden" name="mid" value="'.MCP_MID.'">';
+                $dform .= '<input type="hidden" name="txntype" value="SALE">';
+                $dform .= '<input type="hidden" name="reference" value="'.$createDonation[0]->id.'">';
+                $dform .= '<input type="hidden" name="cur" value="'.MCP_CURRENCY.'">';
+                $dform .= '<input type="hidden" name="amt" value="'.$form['amount'].'">';
+                $dform .= '<input type="hidden" name="shop" value="Interaktiv Foundation">';
+                $dform .= '<input type="hidden" name="buyer" value="'.$form['name'].'">';
+                $dform .= '<input type="hidden" name="email" value="'.$form['email'].'">';
+                $dform .= '<input type="hidden" name="tel" value="63526560">';
+                $dform .= '<input type="hidden" name="product" value="Donation">';
+                $dform .= '<input type="hidden" name="lang" value="EN">';
+                $dform .= '<input type="hidden" name="statusurl" value="'.STATUS_URL.'">';
+                $dform .= '<input type="hidden" name="returnurl" value="'.RETURN_URL.'">';
+                $dform .= '<input type="hidden" name="fgkey" value="'.$fgkey.'">';
+                $dform .= '</form>';
+                $js = '<script type="text/javascript">document.donation.submit();</script>';
+            }
+            else{
+                
+            $dform = '<form action="<?php echo PAYPAL_URL; ?>" method="post" name="donation" id="donation">';
+            $dform .= '<input type="hidden" name="business" value="<?php echo PAYPAL_SELLER_EMAIL; ?>">';
+            $dform .= '<input type="hidden" name="cmd" value="_xclick">';
+            $dform .= '<input type="hidden" name="item_name" value="InterAktiv DONATION #<?php echo $createDonation[0]->id; ?>">';
+            $dform .= '<input type="hidden" name="item_number" value="'.$createDonation[0]->id.'">';
+            $dform .= '<input type="hidden" name="amount" value="'.$form['amount'].'">';
+            $dform .= '<input type="hidden" name="currency_code" value="SGD">';
+            $dform .= '<input type="hidden" name="cancel_return" value="http://'.$_SERVER['HTTP_HOST'].'">';
+            $dform .= '<input type="hidden" name="cancel_return" value="http://'.$_SERVER['HTTP_HOST'].'/success.php">';
             $dform .= '</form>';
             $js = '<script type="text/javascript">document.donation.submit();</script>';
+            }
             
         } else {
             $response_state = "danger";
@@ -305,7 +321,6 @@ if (isset($_POST)) {
 
             <div class="card card-container">
 
-                <!--<img id="profile-img" class="profile-img-card" src="images/logo_boystown2.png" />//-->
                 <br />
                 <div class="alert alert-<?=$response_state?>">
                     <center><strong><?=$response_message?><br></strong></center>
@@ -320,9 +335,9 @@ if (isset($_POST)) {
                 </div>
                 <?php
                 if($response_state == "danger") {
-                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'https://test.interaktiv.sg/Boystown/donation/\')">Back</button>';
+                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'index.php\')">Back</button>';
                 } else {
-                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'https://boystown.org.sg/home.html\')">Return to homepage</button>';
+                    print '<button class="btn btn-lg btn-primary btn-block btn-signin" type="button" onclick="window.location.replace(\'index.php\')">Return to homepage</button>';
                 }
                 ?>
             </div><!-- /card-container -->
